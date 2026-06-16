@@ -1,0 +1,8 @@
+node_modules/
+server/node_modules/
+client/node_modules/
+server/fieldops.db
+server/uploads/
+client/dist/
+.env
+*.log
