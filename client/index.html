@@ -8,9 +8,70 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>FieldOps — Pole Distribution Logger</title>
+    <style>
+      * { box-sizing: border-box; margin: 0; }
+      body { background: #0f172a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+      #splash {
+        position: fixed; inset: 0; z-index: 9999;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center; gap: 20px;
+        background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+      }
+      #splash .icon {
+        font-size: 56px;
+        animation: bob 1.6s ease-in-out infinite;
+      }
+      #splash .title {
+        color: white; font-size: 22px; font-weight: 700; letter-spacing: -0.5px;
+      }
+      #splash .sub {
+        color: rgba(255,255,255,0.4); font-size: 13px;
+      }
+      #splash .bar-wrap {
+        width: 180px; height: 4px; border-radius: 4px;
+        background: rgba(255,255,255,0.1); overflow: hidden;
+      }
+      #splash .bar {
+        height: 100%; border-radius: 4px;
+        background: linear-gradient(90deg, #6366f1, #818cf8);
+        animation: load 2s ease-in-out infinite;
+      }
+      @keyframes bob {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-8px); }
+      }
+      @keyframes load {
+        0% { width: 0%; margin-left: 0; }
+        50% { width: 70%; margin-left: 0; }
+        100% { width: 0%; margin-left: 100%; }
+      }
+    </style>
   </head>
   <body>
+    <div id="splash">
+      <div class="icon">🏗️</div>
+      <div class="title">FieldOps</div>
+      <div class="sub">Pole Distribution Field Logger</div>
+      <div class="bar-wrap"><div class="bar"></div></div>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <script>
+      // Hide splash once React has mounted
+      document.addEventListener('DOMContentLoaded', () => {
+        const observer = new MutationObserver(() => {
+          if (document.getElementById('root').children.length > 0) {
+            const splash = document.getElementById('splash');
+            if (splash) {
+              splash.style.transition = 'opacity 0.4s ease';
+              splash.style.opacity = '0';
+              setTimeout(() => splash.remove(), 400);
+            }
+            observer.disconnect();
+          }
+        });
+        observer.observe(document.getElementById('root'), { childList: true, subtree: true });
+      });
+    </script>
   </body>
 </html>
