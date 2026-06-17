@@ -3,6 +3,7 @@ import SummaryCards from './SummaryCards';
 import FiltersBar from './FiltersBar';
 import LogCard from './LogCard';
 import ReportSection from './ReportSection';
+import MapView from './MapView';
 
 const DEFAULT_FILTERS = {
   start: new Date().toISOString().split('T')[0],
@@ -15,6 +16,7 @@ export default function AdminDashboard() {
   const [summary, setSummary] = useState(null);
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [loading, setLoading] = useState(false);
+  const [view, setView]       = useState('list'); // 'list' | 'map'
 
   const fetchLogs = useCallback(async () => {
     setLoading(true);
@@ -78,7 +80,7 @@ export default function AdminDashboard() {
             📱 Field App
           </a>
           <button onClick={() => { fetchLogs(); fetchSummary(); }}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 transition-colors"
             style={{ background: 'rgba(100,116,139,0.08)', border: '1px solid rgba(100,116,139,0.2)' }}>
             🔄 Refresh
           </button>
@@ -90,35 +92,61 @@ export default function AdminDashboard() {
         <FiltersBar filters={filters} onChange={setFilters} onReset={() => setFilters(DEFAULT_FILTERS)} />
         <ReportSection logs={logs} summary={summary} />
 
-        {/* Log feed header */}
+        {/* View toggle + log feed header */}
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-base font-bold text-slate-700">
             Log Entries{' '}
-            {!loading && (
-              <span className="font-normal text-slate-400 text-sm">({logs.length})</span>
+            {!loading && <span className="font-normal text-slate-400 text-sm">({logs.length})</span>}
+            {loading && (
+              <span className="ml-3 inline-flex items-center gap-1.5 text-sm font-normal text-slate-400">
+                <span className="inline-block w-2 h-2 bg-indigo-400 rounded-full animate-pulse" />
+                Loading...
+              </span>
             )}
           </h2>
-          {loading && (
-            <span className="text-sm text-slate-400 flex items-center gap-2">
-              <span className="inline-block w-2 h-2 bg-indigo-400 rounded-full animate-pulse" />
-              Loading...
-            </span>
-          )}
-        </div>
 
-        {!loading && logs.length === 0 && (
-          <div className="glass-light rounded-2xl text-center py-16 text-slate-400">
-            <div className="text-4xl mb-3">📋</div>
-            <p className="font-medium">No log entries found for the selected filters.</p>
-            <p className="text-sm mt-1">Try widening the date range or clearing filters.</p>
+          {/* Map / List toggle */}
+          <div className="flex items-center gap-1 p-1 rounded-xl"
+            style={{ background: 'rgba(100,116,139,0.08)', border: '1px solid rgba(100,116,139,0.15)' }}>
+            {[
+              { id: 'list', label: '☰ List' },
+              { id: 'map',  label: '🗺️ Map'  },
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setView(tab.id)}
+                className="px-4 py-1.5 rounded-lg text-sm font-semibold transition-all"
+                style={view === tab.id
+                  ? { background: 'white', color: '#4f46e5', boxShadow: '0 1px 6px rgba(0,0,0,0.1)' }
+                  : { color: '#94a3b8' }
+                }
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
-        )}
-
-        <div className="space-y-4">
-          {logs.map(log => (
-            <LogCard key={log.id} log={log} onUpdate={handleUpdate} onDelete={handleDelete} />
-          ))}
         </div>
+
+        {/* Map view */}
+        {view === 'map' && <MapView logs={logs} />}
+
+        {/* List view */}
+        {view === 'list' && (
+          <>
+            {!loading && logs.length === 0 && (
+              <div className="glass-light rounded-2xl text-center py-16 text-slate-400">
+                <div className="text-4xl mb-3">📋</div>
+                <p className="font-medium">No log entries found for the selected filters.</p>
+                <p className="text-sm mt-1">Try widening the date range or clearing filters.</p>
+              </div>
+            )}
+            <div className="space-y-4">
+              {logs.map(log => (
+                <LogCard key={log.id} log={log} onUpdate={handleUpdate} onDelete={handleDelete} />
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
